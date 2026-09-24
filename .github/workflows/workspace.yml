@@ -1,0 +1,22 @@
+name: workspace-lab
+
+on: push
+
+permissions: {}
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Identify execution environment
+        run: |
+          uname -s
+          pwd
+
+      - name: Read repository file
+        run: cat lab/marker.txt
+
+      - name: Reach the end
+        run: echo "Reached the final step"
