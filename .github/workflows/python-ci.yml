@@ -33,4 +33,4 @@ jobs:
           which pytest
 
       - name: Run tests
-        run: pytest
+        run: python -m pytest
