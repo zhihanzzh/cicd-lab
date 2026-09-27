@@ -1,0 +1,86 @@
+name: change-routing
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.classify.outputs.backend }}
+      training: ${{ steps.classify.outputs.training }}
+      infra: ${{ steps.classify.outputs.infra }}
+      docker: ${{ steps.classify.outputs.docker }}
+      unknown: ${{ steps.classify.outputs.unknown }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Retrieve changed PR files
+        id: files
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const pull = { ...context.repo, pull_number: context.issue.number };
+            const { data: pr } = await github.rest.pulls.get(pull);
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              ...pull,
+              per_page: 100,
+            });
+            const filenames = files.map(file => file.filename);
+            core.info(`Changed PR filenames:\n${JSON.stringify(filenames, null, 2)}`);
+            if (filenames.length !== pr.changed_files) {
+              throw new Error("Incomplete PR file list; refusing to classify partial results.");
+            }
+            core.setOutput("files", JSON.stringify(filenames));
+
+      - name: Classify changed files
+        id: classify
+        env:
+          CHANGED_FILES: ${{ steps.files.outputs.files }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          from scripts.change_detector import classify
+
+          changed_files = json.loads(os.environ["CHANGED_FILES"])
+          result = classify(changed_files)
+          print(result)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              for key, value in result.items():
+                  output.write(f"{key}={str(value).lower()}\n")
+          PY
+
+  backend-tests:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.unknown == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Backend tests demonstration"
+
+  training-tests:
+    needs: changes
+    if: ${{ needs.changes.outputs.training == 'true' || needs.changes.outputs.unknown == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Training tests demonstration"
+
+  infra-validation:
+    needs: changes
+    if: ${{ needs.changes.outputs.infra == 'true' || needs.changes.outputs.unknown == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Infrastructure validation demonstration"
+
+  docker-build:
+    needs: changes
+    if: ${{ needs.changes.outputs.docker == 'true' || needs.changes.outputs.unknown == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Docker build demonstration"
