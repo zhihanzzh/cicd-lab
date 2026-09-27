@@ -33,4 +33,6 @@ jobs:
           which pytest
 
       - name: Run tests
+        env:
+          MODE: test
         run: python -m pytest
