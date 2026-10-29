@@ -15,7 +15,7 @@ jobs:
           repositories: dummy_hw
       - uses: actions/checkout@v6
         with:
-          repository: zhihanzzh/leetcode-1
+          repository: zhihanzzh/jenkins_test
           token: ${{steps.app-token.outputs.token}}
-          path: leetcode-1 
-      - run: ls -la leetcode-1 
+          path: jenkins_test
+      - run: ls -la jenkins_test
