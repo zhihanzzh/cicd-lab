@@ -15,7 +15,7 @@ jobs:
           repositories: dummy_hw
       - uses: actions/checkout@v6
         with:
-          repository: zhihanzzh/dummy_hw
+          repository: zhihanzzh/leetcode-1
           token: ${{steps.app-token.outputs.token}}
-          path: dummy_hw
-      - run: ls -la dummy_hw
+          path: leetcode-1 
+      - run: ls -la leetcode-1 
