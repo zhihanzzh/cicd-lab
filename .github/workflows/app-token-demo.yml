@@ -1,0 +1,21 @@
+name: app-token-demo
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - id : app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{secrets.HWBENCH_APP_ID}}
+          private-key: ${{secrets.HWBENCH_APP_KEY}}
+          owner: zhihanzzh
+          repositories: dummy_hw
+      - uses: actions/checkout@v6
+        with:
+          repository: zhihanzzh/dummy_hw
+          token: ${{steps.app-token.outputs.token}}
+          path: dummy_hw
+      - run: ls -la dummy_hw
